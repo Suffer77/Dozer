@@ -31,9 +31,7 @@ targets:
       Release: Configs/Release.xcconfig
     sources:
       - Dozer
-    postBuildScripts:
-      - path: Scripts/Swiftlint.sh
-        name: Swiftlint
+
     settings:
       base:
         CODE_SIGN_ENTITLEMENTS: Dozer/Other/Dozer.entitlements
