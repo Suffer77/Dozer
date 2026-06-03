@@ -53,7 +53,7 @@ class HelperstatusIcon {
         guard let statusIconButton = statusIcon.button else {
             fatalError("helper status item button failed")
         }
-        statusIconButton.image = NSImage(named: "helperStatusItemIcon")
+        statusIconButton.image = NSImage(named: "HelperStatusItemIcon")
         statusIconButton.image?.isTemplate = true
     }
 
