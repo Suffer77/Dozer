@@ -16,49 +16,50 @@ final class General: NSViewController, SettingsPane {
     private let launchAtLoginCheckbox = NSButton(checkboxWithTitle: "Launch at login", target: nil, action: nil)
     private let hideAtLaunchCheckbox = NSButton(checkboxWithTitle: "Hide at launch", target: nil, action: nil)
     private let hideAfterDelayCheckbox = NSButton(checkboxWithTitle: "Hide after delay", target: nil, action: nil)
-    private let hideAfterDelayPopup = NSPopUpButton()
+    private let hideAfterDelayPopup: NSPopUpButton = {
+        let popup = NSPopUpButton()
+        popup.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        return popup
+    }()
     private let enableRemoveIconCheckbox = NSButton(checkboxWithTitle: "Enable remove icon", target: nil, action: nil)
     private let hideBothIconsCheckbox = NSButton(checkboxWithTitle: "Hide both Tuck icons (requires shortcut)", target: nil, action: nil)
+    private let shortcutLabel = NSTextField(labelWithString: "Toggle shortcut:")
     private let shortcutRecorder = KeyboardShortcuts.RecorderCocoa(for: .toggleMenuItems)
+    private let quitButton = NSButton(title: "Quit Tuck", target: NSApp, action: #selector(NSApp.terminate(_:)))
 
     private let delayValues: [TimeInterval] = [5, 10, 30, 60]
 
     override func loadView() {
-        let delayRow = NSStackView(views: [hideAfterDelayCheckbox, hideAfterDelayPopup])
-        delayRow.spacing = 8
-        delayRow.alignment = .centerY
+        let grid = NSGridView()
+        grid.columnSpacing = 8
+        grid.rowSpacing = 10
+        grid.setContentHuggingPriority(.defaultHigh, for: .horizontal)
 
-        let shortcutLabel = NSTextField(labelWithString: "Toggle shortcut:")
-        shortcutLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        let shortcutRow = NSStackView(views: [shortcutLabel, shortcutRecorder])
-        shortcutRow.spacing = 8
-        shortcutRow.alignment = .centerY
+        grid.addRow(with: [launchAtLoginCheckbox, NSGridCell.emptyContentView])
+        grid.addRow(with: [hideAtLaunchCheckbox, NSGridCell.emptyContentView])
+        grid.addRow(with: [hideAfterDelayCheckbox, hideAfterDelayPopup])
+        grid.addRow(with: [enableRemoveIconCheckbox, NSGridCell.emptyContentView])
+        grid.addRow(with: [hideBothIconsCheckbox, NSGridCell.emptyContentView])
+        grid.addRow(with: [shortcutLabel, shortcutRecorder])
+        grid.addRow(with: [quitButton, NSGridCell.emptyContentView])
 
-        let quitButton = NSButton(title: "Quit Tuck", target: NSApp, action: #selector(NSApp.terminate(_:)))
-
-        let stack = NSStackView(views: [
-            launchAtLoginCheckbox,
-            hideAtLaunchCheckbox,
-            delayRow,
-            enableRemoveIconCheckbox,
-            hideBothIconsCheckbox,
-            shortcutRow,
-            quitButton
-        ])
-        stack.orientation = .vertical
-        stack.alignment = .leading
-        stack.spacing = 12
-        stack.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+        // Left-align the label column
+        grid.column(at: 0).xPlacement = .leading
+        grid.column(at: 1).xPlacement = .leading
+        // Vertically center all rows
+        for i in 0..<grid.numberOfRows {
+            grid.row(at: i).yPlacement = .center
+        }
 
         let container = NSView()
-        container.addSubview(stack)
-        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(grid)
+        grid.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: container.topAnchor),
-            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            stack.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            container.widthAnchor.constraint(greaterThanOrEqualToConstant: 320)
+            grid.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+            grid.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+            grid.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -20),
+            grid.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
+            container.widthAnchor.constraint(greaterThanOrEqualToConstant: 340)
         ])
 
         view = container
@@ -67,14 +68,12 @@ final class General: NSViewController, SettingsPane {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Populate delay popup
         for value in delayValues {
-            let title = value == 1 ? "1 second" : "\(Int(value)) seconds"
+            let title = "\(Int(value)) seconds"
             hideAfterDelayPopup.addItem(withTitle: title)
             hideAfterDelayPopup.lastItem?.tag = Int(value)
         }
 
-        // Set initial states
         launchAtLoginCheckbox.isChecked = LaunchAtLogin.isEnabled
         hideAtLaunchCheckbox.isChecked = Defaults[.hideAtLaunchEnabled]
         hideAfterDelayCheckbox.isChecked = Defaults[.hideAfterDelayEnabled]
@@ -82,28 +81,21 @@ final class General: NSViewController, SettingsPane {
         hideBothIconsCheckbox.isChecked = Defaults[.noIconMode]
         hideAfterDelayPopup.selectItem(withTag: Int(Defaults[.hideAfterDelay]))
 
-        // Wire targets/actions
         launchAtLoginCheckbox.target = self
         launchAtLoginCheckbox.action = #selector(launchAtLoginChanged)
-
         hideAtLaunchCheckbox.target = self
         hideAtLaunchCheckbox.action = #selector(hideAtLaunchChanged)
-
         hideAfterDelayCheckbox.target = self
         hideAfterDelayCheckbox.action = #selector(hideAfterDelayChanged)
-
         hideAfterDelayPopup.target = self
         hideAfterDelayPopup.action = #selector(hideAfterDelaySecondsChanged)
-
         enableRemoveIconCheckbox.target = self
         enableRemoveIconCheckbox.action = #selector(enableRemoveIconChanged)
-
         hideBothIconsCheckbox.target = self
         hideBothIconsCheckbox.action = #selector(hideBothIconsChanged)
 
         updateHideBothIconsState()
 
-        // Update hide-both-icons checkbox when shortcut changes
         KeyboardShortcuts.onKeyUp(for: .toggleMenuItems) { [weak self] in
             self?.updateHideBothIconsState()
         }
