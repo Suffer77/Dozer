@@ -18,7 +18,7 @@ final class General: NSViewController, SettingsPane {
     private let hideAfterDelayCheckbox = NSButton(checkboxWithTitle: "Hide after delay", target: nil, action: nil)
     private let hideAfterDelayPopup = NSPopUpButton()
     private let enableRemoveIconCheckbox = NSButton(checkboxWithTitle: "Enable remove icon", target: nil, action: nil)
-    private let hideBothIconsCheckbox = NSButton(checkboxWithTitle: "Hide both Dozer icons (requires shortcut)", target: nil, action: nil)
+    private let hideBothIconsCheckbox = NSButton(checkboxWithTitle: "Hide both Tuck icons (requires shortcut)", target: nil, action: nil)
     private let shortcutRecorder = KeyboardShortcuts.RecorderCocoa(for: .toggleMenuItems)
 
     private let delayValues: [TimeInterval] = [5, 10, 30, 60]
@@ -34,7 +34,7 @@ final class General: NSViewController, SettingsPane {
         shortcutRow.spacing = 8
         shortcutRow.alignment = .centerY
 
-        let quitButton = NSButton(title: "Quit Dozer", target: NSApp, action: #selector(NSApp.terminate(_:)))
+        let quitButton = NSButton(title: "Quit Tuck", target: NSApp, action: #selector(NSApp.terminate(_:)))
 
         let stack = NSStackView(views: [
             launchAtLoginCheckbox,
@@ -78,7 +78,7 @@ final class General: NSViewController, SettingsPane {
         launchAtLoginCheckbox.isChecked = LaunchAtLogin.isEnabled
         hideAtLaunchCheckbox.isChecked = Defaults[.hideAtLaunchEnabled]
         hideAfterDelayCheckbox.isChecked = Defaults[.hideAfterDelayEnabled]
-        enableRemoveIconCheckbox.isChecked = Defaults[.removeDozerIconEnabled]
+        enableRemoveIconCheckbox.isChecked = Defaults[.removeTuckIconEnabled]
         hideBothIconsCheckbox.isChecked = Defaults[.noIconMode]
         hideAfterDelayPopup.selectItem(withTag: Int(Defaults[.hideAfterDelay]))
 
@@ -116,24 +116,24 @@ final class General: NSViewController, SettingsPane {
     }
 
     @objc private func hideAtLaunchChanged() {
-        DozerIcons.shared.hideStatusBarIconsAtLaunch = hideAtLaunchCheckbox.isChecked
+        TuckIcons.shared.hideStatusBarIconsAtLaunch = hideAtLaunchCheckbox.isChecked
     }
 
     @objc private func hideAfterDelayChanged() {
-        DozerIcons.shared.hideStatusBarIconsAfterDelay = hideAfterDelayCheckbox.isChecked
+        TuckIcons.shared.hideStatusBarIconsAfterDelay = hideAfterDelayCheckbox.isChecked
     }
 
     @objc private func hideAfterDelaySecondsChanged() {
         Defaults[.hideAfterDelay] = TimeInterval(hideAfterDelayPopup.selectedTag())
-        DozerIcons.shared.resetTimer()
+        TuckIcons.shared.resetTimer()
     }
 
     @objc private func enableRemoveIconChanged() {
-        DozerIcons.shared.enableRemoveDozerIcon = enableRemoveIconCheckbox.isChecked
+        TuckIcons.shared.enableRemoveTuckIcon = enableRemoveIconCheckbox.isChecked
     }
 
     @objc private func hideBothIconsChanged() {
-        DozerIcons.shared.hideBothDozerIcons = hideBothIconsCheckbox.isChecked
+        TuckIcons.shared.hideBothTuckIcons = hideBothIconsCheckbox.isChecked
     }
 
     // MARK: - Helpers

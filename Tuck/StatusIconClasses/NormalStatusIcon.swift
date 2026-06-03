@@ -4,31 +4,29 @@
 
 import Cocoa
 
-class RemoveStatusIcon: HelperstatusIcon {
+class NormalStatusIcon: HelperstatusIcon {
     override init() {
         super.init()
-        type = .remove
+        type = .normal
     }
 
     override func statusIconClicked(_: AnyObject?) {
         guard let currentEvent = NSApp.currentEvent else { return }
 
+        if currentEvent.modifierFlags.contains(.option) &&
+            !currentEvent.modifierFlags.contains(.control) &&
+            !currentEvent.modifierFlags.contains(.command) {
+            TuckIcons.shared.handleOptionClick()
+            return
+        }
+
         switch currentEvent.type {
         case .leftMouseDown:
-            DozerIcons.shared.toggleRemove()
+            TuckIcons.shared.toggle()
         case .rightMouseDown:
             appDelegate.settingsWindowController.show(pane: .general)
         default:
             break
         }
-    }
-
-    override func setIcon() {
-        guard let statusIconButton = statusIcon.button else {
-            fatalError("helper status item button failed")
-        }
-        statusIconButton.image = NSImage(named: "helperStatusItemIcon")
-        statusIconButton.image?.size = NSSize(width: 8, height: 8)
-        statusIconButton.image?.isTemplate = true
     }
 }

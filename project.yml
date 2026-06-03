@@ -1,4 +1,4 @@
-name: Dozer
+name: Tuck
 
 packages:
   Defaults:
@@ -21,7 +21,7 @@ options:
   deploymentTarget: "13.0"
 
 targets:
-  Dozer:
+  Tuck:
     type: application
     platform: macOS
     deploymentTarget:
@@ -30,18 +30,18 @@ targets:
       Debug: Configs/Debug.xcconfig
       Release: Configs/Release.xcconfig
     sources:
-      - Dozer
-
+      - Tuck
     settings:
       base:
-        CODE_SIGN_ENTITLEMENTS: Dozer/Other/Dozer.entitlements
-        PRODUCT_BUNDLE_IDENTIFIER: "com.mortennn.Dozer"
+        CODE_SIGN_ENTITLEMENTS: Tuck/Other/Tuck.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: "com.suffer77.Tuck"
+        PRODUCT_NAME: Tuck
         SWIFT_VERSION: 5
         DEBUG_INFORMATION_FORMAT: "dwarf-with-dsym"
         ENABLE_HARDENED_RUNTIME: true
         MACOSX_DEPLOYMENT_TARGET: "13.0"
         VERSIONING_SYSTEM: apple-generic
-        CURRENT_PROJECT_VERSION: 30
+        CURRENT_PROJECT_VERSION: 1
     dependencies:
       - package: Defaults
       - package: Settings
@@ -49,7 +49,7 @@ targets:
       - package: KeyboardShortcuts
 
 schemes:
-  Dozer:
+  Tuck:
     build:
       targets:
-        Dozer: all
+        Tuck: all

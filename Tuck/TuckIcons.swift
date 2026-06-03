@@ -5,20 +5,20 @@
 import Cocoa
 import Defaults
 
-public final class DozerIcons {
-    static var shared = DozerIcons()
-    private var dozerIcons: [HelperstatusIcon] = []
-    private var timerToHideDozerIcons = Timer()
+public final class TuckIcons {
+    static var shared = TuckIcons()
+    private var tuckIcons: [HelperstatusIcon] = []
+    private var timerToHideTuckIcons = Timer()
 
     private init() {
-        dozerIcons.append(NormalStatusIcon())
+        tuckIcons.append(NormalStatusIcon())
 
-        if !hideBothDozerIcons || !Defaults[.isShortcutSet] {
-            dozerIcons.append(NormalStatusIcon())
+        if !hideBothTuckIcons || !Defaults[.isShortcutSet] {
+            tuckIcons.append(NormalStatusIcon())
         }
 
-        if enableRemoveDozerIcon {
-            dozerIcons.append(RemoveStatusIcon())
+        if enableRemoveTuckIcon {
+            tuckIcons.append(RemoveStatusIcon())
         }
 
         if hideStatusBarIconsAfterDelay {
@@ -26,7 +26,7 @@ public final class DozerIcons {
         }
 
         Defaults.observe(.isShortcutSet) { _ in
-            self.triggerHideBothDozerIcons()
+            self.triggerHideBothTuckIcons()
         }
         .tieToLifetime(of: self)
     }
@@ -50,36 +50,36 @@ public final class DozerIcons {
         }
     }
 
-    public var hideBothDozerIcons: Bool = Defaults[.noIconMode] {
+    public var hideBothTuckIcons: Bool = Defaults[.noIconMode] {
         didSet {
-            Defaults[.noIconMode] = self.hideBothDozerIcons
-            triggerHideBothDozerIcons()
+            Defaults[.noIconMode] = self.hideBothTuckIcons
+            triggerHideBothTuckIcons()
         }
     }
 
-    public func triggerHideBothDozerIcons() {
-        let normalStatusIconsCount = dozerIcons.filter { $0.type == .normal }.count
-        if hideBothDozerIcons && Defaults[.isShortcutSet] {
+    public func triggerHideBothTuckIcons() {
+        let normalStatusIconsCount = tuckIcons.filter { $0.type == .normal }.count
+        if hideBothTuckIcons && Defaults[.isShortcutSet] {
             if normalStatusIconsCount == 2 {
-                let rightDozerIconXPos = get(dozerIcon: .normalRight).xPositionOnScreen
-                dozerIcons.removeAll { $0.xPositionOnScreen == rightDozerIconXPos }
+                let rightTuckIconXPos = get(tuckIcon: .normalRight).xPositionOnScreen
+                tuckIcons.removeAll { $0.xPositionOnScreen == rightTuckIconXPos }
             }
-        } else if !hideBothDozerIcons && Defaults[.isShortcutSet] || !Defaults[.isShortcutSet] {
+        } else if !hideBothTuckIcons && Defaults[.isShortcutSet] || !Defaults[.isShortcutSet] {
             if normalStatusIconsCount == 1 {
                 show()
-                dozerIcons.append(NormalStatusIcon())
+                tuckIcons.append(NormalStatusIcon())
             }
         }
         show()
     }
 
-    public var enableRemoveDozerIcon: Bool = Defaults[.removeDozerIconEnabled] {
+    public var enableRemoveTuckIcon: Bool = Defaults[.removeTuckIconEnabled] {
         didSet {
-            Defaults[.removeDozerIconEnabled] = self.enableRemoveDozerIcon
-            if enableRemoveDozerIcon {
-                dozerIcons.append(RemoveStatusIcon())
+            Defaults[.removeTuckIconEnabled] = self.enableRemoveTuckIcon
+            if enableRemoveTuckIcon {
+                tuckIcons.append(RemoveStatusIcon())
             } else {
-                dozerIcons.removeAll { $0.type == .remove }
+                tuckIcons.removeAll { $0.type == .remove }
             }
             showAll()
         }
@@ -113,7 +113,7 @@ public final class DozerIcons {
     }
 
     public func toggle() {
-        if get(dozerIcon: .normalLeft).isShown {
+        if get(tuckIcon: .normalLeft).isShown {
             hide()
         } else {
             show()
@@ -121,14 +121,14 @@ public final class DozerIcons {
     }
 
     public func toggleRemove() {
-        if get(dozerIcon: .remove).isShown {
+        if get(tuckIcon: .remove).isShown {
             perform(action: .hide, statusIcon: .remove)
         } else {
             perform(action: .show, statusIcon: .remove)
         }
     }
 
-    /// Force show all Dozer icons
+    /// Force show all Tuck icons
     public func showAll() {
         perform(action: .show, statusIcon: .remove)
         perform(action: .show, statusIcon: .normalLeft)
@@ -136,11 +136,11 @@ public final class DozerIcons {
     }
 
     public func handleOptionClick() {
-        if get(dozerIcon: .normalLeft).isShown {
-            DozerIcons.shared.perform(action: .toggle, statusIcon: .remove)
+        if get(tuckIcon: .normalLeft).isShown {
+            TuckIcons.shared.perform(action: .toggle, statusIcon: .remove)
         } else {
-            DozerIcons.shared.perform(action: .show, statusIcon: .normalLeft)
-            DozerIcons.shared.perform(action: .show, statusIcon: .remove)
+            TuckIcons.shared.perform(action: .show, statusIcon: .normalLeft)
+            TuckIcons.shared.perform(action: .show, statusIcon: .remove)
         }
         resetTimer()
     }
@@ -152,13 +152,13 @@ public final class DozerIcons {
             stopTimer()
             return
         }
-        timerToHideDozerIcons = Timer.scheduledTimer(withTimeInterval: Defaults[.hideAfterDelay], repeats: false) { _ in
+        timerToHideTuckIcons = Timer.scheduledTimer(withTimeInterval: Defaults[.hideAfterDelay], repeats: false) { _ in
             self.hide()
         }
     }
 
     private func stopTimer() {
-        timerToHideDozerIcons.invalidate()
+        timerToHideTuckIcons.invalidate()
     }
 
     func resetTimer() {
@@ -168,12 +168,11 @@ public final class DozerIcons {
 
     // MARK: Private methods
 
-    /// Will fail silently if statusIcon does not exist
-    private func perform(action: StatusIconAction, statusIcon: DozerIcon) {
+    private func perform(action: StatusIconAction, statusIcon: TuckIcon) {
         if statusIcon == .remove {
-            guard Defaults[.removeDozerIconEnabled] else { return }
+            guard Defaults[.removeTuckIconEnabled] else { return }
         }
-        let theStatusIcon: HelperstatusIcon = get(dozerIcon: statusIcon)
+        let theStatusIcon: HelperstatusIcon = get(tuckIcon: statusIcon)
         switch action {
         case .show: theStatusIcon.show()
         case .hide: theStatusIcon.hide()
@@ -181,25 +180,25 @@ public final class DozerIcons {
         }
     }
 
-    /// Will crash if trying to get a DozerIcon which does not exist in the menu bar
-    private func get(dozerIcon: DozerIcon) -> HelperstatusIcon {
+    /// Will crash if trying to get a TuckIcon which does not exist in the menu bar
+    private func get(tuckIcon: TuckIcon) -> HelperstatusIcon {
         var normalStatusIconsXPosition: [CGFloat] = []
-        for statusIcon in dozerIcons where statusIcon.type == .normal {
+        for statusIcon in tuckIcons where statusIcon.type == .normal {
             normalStatusIconsXPosition.append(statusIcon.xPositionOnScreen)
         }
-        switch dozerIcon {
+        switch tuckIcon {
         case .remove:
-            guard let removeStatusIcon = dozerIcons.first(where: { $0.type == .remove }) else {
+            guard let removeStatusIcon = tuckIcons.first(where: { $0.type == .remove }) else {
                 fatalError("Failed getting remove status icon")
             }
             return removeStatusIcon
         case .normalLeft:
-            guard let leftStatusIcon = dozerIcons.first(where: { $0.xPositionOnScreen == normalStatusIconsXPosition.min() }) else {
+            guard let leftStatusIcon = tuckIcons.first(where: { $0.xPositionOnScreen == normalStatusIconsXPosition.min() }) else {
                 fatalError("Failed getting status icon on the left")
             }
             return leftStatusIcon
         case .normalRight:
-            guard let rightStatusIcon = dozerIcons.first(where: { $0.xPositionOnScreen == normalStatusIconsXPosition.max() }) else {
+            guard let rightStatusIcon = tuckIcons.first(where: { $0.xPositionOnScreen == normalStatusIconsXPosition.max() }) else {
                 fatalError("Failed getting status icon on the right")
             }
             return rightStatusIcon

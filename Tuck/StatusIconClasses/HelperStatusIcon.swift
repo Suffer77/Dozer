@@ -69,9 +69,9 @@ class HelperstatusIcon {
     }
 
     var xPositionOnScreen: CGFloat {
-        guard let dozerIconFrame = statusIcon.button?.window?.frame else {
+        guard let iconFrame = statusIcon.button?.window?.frame else {
             return 0
         }
-        return dozerIconFrame.origin.x
+        return iconFrame.origin.x
     }
 }

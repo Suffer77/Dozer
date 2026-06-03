@@ -12,7 +12,7 @@ extension Defaults.Keys {
     static let hideAfterDelayEnabled: Defaults.Key<Bool> = Key<Bool>("hideAfterDelayEnabled", default: false)
     static let hideAfterDelay: Defaults.Key<TimeInterval> = Key<TimeInterval>("hideAfterDelay", default: 10)
     static let noIconMode: Defaults.Key<Bool> = Key<Bool>("noIconMode", default: false)
-    static let removeDozerIconEnabled: Defaults.Key<Bool> = Key<Bool>("removeStatusIconEnabled", default: false)
+    static let removeTuckIconEnabled: Defaults.Key<Bool> = Key<Bool>("removeTuckIconEnabled", default: false)
     static let isShortcutSet: Defaults.Key<Bool> = Key<Bool>("isShortcutSet", default: false)
 }
 
@@ -26,12 +26,6 @@ extension Settings.PaneIdentifier {
 
 struct AppInfo {
     static let bundleIdentifier: String = Bundle.main.bundleIdentifier!
-    static var releaseVersionNumber: String? {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    }
-    static var buildVersionNumber: String? {
-        Bundle.main.infoDictionary?["CFBundleVersion"] as? String
-    }
 }
 
 enum StatusIconAction {
@@ -45,7 +39,7 @@ enum StatusIconType {
     case remove
 }
 
-enum DozerIcon {
+enum TuckIcon {
     case remove
     case normalLeft
     case normalRight

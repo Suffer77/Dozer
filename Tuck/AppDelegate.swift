@@ -9,21 +9,21 @@ import Settings
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
         KeyboardShortcuts.onKeyDown(for: .toggleMenuItems) {
-            DozerIcons.shared.toggle()
+            TuckIcons.shared.toggle()
         }
 
-        // Initialize Dozer Icons
-        _ = DozerIcons.shared
+        // Initialize Tuck Icons
+        _ = TuckIcons.shared
 
         // If enabled hide menu bar icons at launch
-        DozerIcons.shared.hideAtLaunch()
+        TuckIcons.shared.hideAtLaunch()
 
-        _ = DozerIcons.toggleDockIcon(showIcon: false)
+        _ = TuckIcons.toggleDockIcon(showIcon: false)
     }
 
-    // Show all Dozer icons when opening Dozer from Finder etc.
+    // Show all Tuck icons when opening Tuck from Finder etc.
     func applicationOpenUntitledFile(_ sender: NSApplication) -> Bool {
-        DozerIcons.shared.showAll()
+        TuckIcons.shared.showAll()
         return true
     }
 
