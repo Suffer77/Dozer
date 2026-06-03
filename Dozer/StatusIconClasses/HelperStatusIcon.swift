@@ -3,12 +3,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import Defaults
 
-private struct StatusIconLength {
-    static var show: CGFloat {
-        Defaults[.buttonPadding]
-    }
+private enum StatusIconLength {
+    static let show: CGFloat = 25.0
     static let hide: CGFloat = 10_000
 }
 
@@ -56,27 +53,9 @@ class HelperstatusIcon {
         guard let statusIconButton = statusIcon.button else {
             fatalError("helper status item button failed")
         }
-        statusIconButton.image = Icons().helperstatusIcon
-        statusIconButton.image!.isTemplate = true
+        statusIconButton.image = NSImage(named: "helperStatusItemIcon")
+        statusIconButton.image?.isTemplate = true
     }
-
-    func setSize() {
-        if statusIcon.length != StatusIconLength.hide {
-            statusIcon.length = StatusIconLength.show
-        }
-        guard let statusIconButton = statusIcon.button else {
-            fatalError("helper status item button failed")
-        }
-        let image = statusIconButton.image
-        var size = DozerIcons.shared.iconFontSize
-        if self.type == .remove {
-            size /= 2
-        }
-        image?.size = NSSize(width: size, height: size)
-        statusIconButton.image = image
-    }
-
-    func showRemoveIcons() {}
 
     @objc
     func statusIconClicked(_ sender: AnyObject?) {}
@@ -93,7 +72,6 @@ class HelperstatusIcon {
         guard let dozerIconFrame = statusIcon.button?.window?.frame else {
             return 0
         }
-        let dozerIconXPosition = dozerIconFrame.origin.x
-        return dozerIconXPosition
+        return dozerIconFrame.origin.x
     }
 }

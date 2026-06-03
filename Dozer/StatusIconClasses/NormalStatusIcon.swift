@@ -3,7 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import Defaults
 
 class NormalStatusIcon: HelperstatusIcon {
     override init() {
@@ -12,15 +11,12 @@ class NormalStatusIcon: HelperstatusIcon {
     }
 
     override func statusIconClicked(_: AnyObject?) {
-        guard let currentEvent = NSApp.currentEvent else {
-            return
-        }
+        guard let currentEvent = NSApp.currentEvent else { return }
 
         if currentEvent.modifierFlags.contains(.option) &&
             !currentEvent.modifierFlags.contains(.control) &&
             !currentEvent.modifierFlags.contains(.command) {
             DozerIcons.shared.handleOptionClick()
-
             return
         }
 
@@ -28,7 +24,7 @@ class NormalStatusIcon: HelperstatusIcon {
         case .leftMouseDown:
             DozerIcons.shared.toggle()
         case .rightMouseDown:
-            appDelegate.preferencesWindowController.show(preferencePane: .general)
+            appDelegate.settingsWindowController.show(pane: .general)
         default:
             break
         }

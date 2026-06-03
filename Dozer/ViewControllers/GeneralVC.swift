@@ -3,117 +3,148 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import Preferences
-import MASShortcut
-import LaunchAtLogin
-import Sparkle
+import Settings
 import Defaults
+import LaunchAtLogin
+import KeyboardShortcuts
 
-final class General: NSViewController, PreferencePane {
-    let preferencePaneIdentifier = Preferences.PaneIdentifier.general
-    let preferencePaneTitle: String = "General"
-    let toolbarItemIcon = NSImage(named: NSImage.preferencesGeneralName)!
+final class General: NSViewController, SettingsPane {
+    let paneIdentifier = Settings.PaneIdentifier.general
+    let paneTitle = "General"
+    let toolbarItemIcon = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "General")!
 
-    override var nibName: NSNib.Name? { "General" }
+    private let launchAtLoginCheckbox = NSButton(checkboxWithTitle: "Launch at login", target: nil, action: nil)
+    private let hideAtLaunchCheckbox = NSButton(checkboxWithTitle: "Hide at launch", target: nil, action: nil)
+    private let hideAfterDelayCheckbox = NSButton(checkboxWithTitle: "Hide after delay", target: nil, action: nil)
+    private let hideAfterDelayPopup = NSPopUpButton()
+    private let enableRemoveIconCheckbox = NSButton(checkboxWithTitle: "Enable remove icon", target: nil, action: nil)
+    private let hideBothIconsCheckbox = NSButton(checkboxWithTitle: "Hide both Dozer icons (requires shortcut)", target: nil, action: nil)
+    private let shortcutRecorder = KeyboardShortcuts.RecorderCocoa(for: .toggleMenuItems)
 
-    fileprivate var userShortCut: MASShortcut!
+    private let delayValues: [TimeInterval] = [5, 10, 30, 60]
 
-    @IBOutlet private var LaunchAtLoginCheckbox: NSButton!
-    @IBOutlet private var CheckForUpdatesCheckbox: NSButton!
-    @IBOutlet private var HideStatusBarIconsAtLaunchCheckbox: NSButton!
-    @IBOutlet private var HideStatusBarIconsAfterDelayCheckbox: NSButton!
-    @IBOutlet private var HideStatusBarIconsSecondsPopUpButton: NSPopUpButton!
-    @IBOutlet private var HideBothDozerIconsCheckbox: NSButton!
-    @IBOutlet private var EnableRemoveDozerIconCheckbox: NSButton!
-    @IBOutlet private var ShowIconAndMenuCheckbox: NSButton!
-    @IBOutlet private var FontSizePopUpButton: NSPopUpButton!
-    @IBOutlet private var ButtonPaddingPopUpButton: NSPopUpButton!
-    @IBOutlet private var ToggleMenuItemsView: MASShortcutView!
+    override func loadView() {
+        let delayRow = NSStackView(views: [hideAfterDelayCheckbox, hideAfterDelayPopup])
+        delayRow.spacing = 8
+        delayRow.alignment = .centerY
+
+        let shortcutLabel = NSTextField(labelWithString: "Toggle shortcut:")
+        shortcutLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        let shortcutRow = NSStackView(views: [shortcutLabel, shortcutRecorder])
+        shortcutRow.spacing = 8
+        shortcutRow.alignment = .centerY
+
+        let quitButton = NSButton(title: "Quit Dozer", target: NSApp, action: #selector(NSApp.terminate(_:)))
+
+        let stack = NSStackView(views: [
+            launchAtLoginCheckbox,
+            hideAtLaunchCheckbox,
+            delayRow,
+            enableRemoveIconCheckbox,
+            hideBothIconsCheckbox,
+            shortcutRow,
+            quitButton
+        ])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 12
+        stack.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+
+        let container = NSView()
+        container.addSubview(stack)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: container.topAnchor),
+            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            stack.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            container.widthAnchor.constraint(greaterThanOrEqualToConstant: 320)
+        ])
+
+        view = container
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        LaunchAtLoginCheckbox.focusRingType = .none
-
-        LaunchAtLoginCheckbox.isChecked = LaunchAtLogin.isEnabled
-        if SUUpdater.shared() != nil {
-            CheckForUpdatesCheckbox.isChecked = SUUpdater.shared()!.automaticallyChecksForUpdates
-        } else {
-            CheckForUpdatesCheckbox.isChecked = false
+        // Populate delay popup
+        for value in delayValues {
+            let title = value == 1 ? "1 second" : "\(Int(value)) seconds"
+            hideAfterDelayPopup.addItem(withTitle: title)
+            hideAfterDelayPopup.lastItem?.tag = Int(value)
         }
 
-        HideStatusBarIconsAtLaunchCheckbox.isChecked = Defaults[.hideAtLaunchEnabled]
-        HideStatusBarIconsAfterDelayCheckbox.isChecked = Defaults[.hideAfterDelayEnabled]
-        HideBothDozerIconsCheckbox.isChecked = Defaults[.noIconMode]
-        EnableRemoveDozerIconCheckbox.isChecked = Defaults[.removeDozerIconEnabled]
-        ShowIconAndMenuCheckbox.isChecked = Defaults[.showIconAndMenuEnabled]
-        HideStatusBarIconsSecondsPopUpButton.selectItem(withTitle: "\(Int(Defaults[.hideAfterDelay])) seconds")
-        FontSizePopUpButton.selectItem(withTitle: "\(Int(Defaults[.iconSize])) px")
-        ButtonPaddingPopUpButton.selectItem(withTitle: "\(Int(Defaults[.buttonPadding])) px")
+        // Set initial states
+        launchAtLoginCheckbox.isChecked = LaunchAtLogin.isEnabled
+        hideAtLaunchCheckbox.isChecked = Defaults[.hideAtLaunchEnabled]
+        hideAfterDelayCheckbox.isChecked = Defaults[.hideAfterDelayEnabled]
+        enableRemoveIconCheckbox.isChecked = Defaults[.removeDozerIconEnabled]
+        hideBothIconsCheckbox.isChecked = Defaults[.noIconMode]
+        hideAfterDelayPopup.selectItem(withTag: Int(Defaults[.hideAfterDelay]))
 
-        ToggleMenuItemsView.associatedUserDefaultsKey = UserDefaultKeys.Shortcuts.ToggleMenuItems
-        view.addSubview(ToggleMenuItemsView)
-        configureEnabledNoIconCheckbox()
+        // Wire targets/actions
+        launchAtLoginCheckbox.target = self
+        launchAtLoginCheckbox.action = #selector(launchAtLoginChanged)
 
-        ToggleMenuItemsView.shortcutValueChange = { _ -> Void in
-            self.userShortCut = self.ToggleMenuItemsView.shortcutValue
-            self.configureEnabledNoIconCheckbox()
+        hideAtLaunchCheckbox.target = self
+        hideAtLaunchCheckbox.action = #selector(hideAtLaunchChanged)
+
+        hideAfterDelayCheckbox.target = self
+        hideAfterDelayCheckbox.action = #selector(hideAfterDelayChanged)
+
+        hideAfterDelayPopup.target = self
+        hideAfterDelayPopup.action = #selector(hideAfterDelaySecondsChanged)
+
+        enableRemoveIconCheckbox.target = self
+        enableRemoveIconCheckbox.action = #selector(enableRemoveIconChanged)
+
+        hideBothIconsCheckbox.target = self
+        hideBothIconsCheckbox.action = #selector(hideBothIconsChanged)
+
+        updateHideBothIconsState()
+
+        // Update hide-both-icons checkbox when shortcut changes
+        KeyboardShortcuts.onKeyUp(for: .toggleMenuItems) { [weak self] in
+            self?.updateHideBothIconsState()
         }
     }
 
-    @IBAction private func launchAtLoginClicked(_ sender: NSButton) {
-        LaunchAtLogin.isEnabled = (sender.state == .on)
+    // MARK: - Actions
+
+    @objc private func launchAtLoginChanged() {
+        LaunchAtLogin.isEnabled = launchAtLoginCheckbox.isChecked
     }
 
-    @IBAction private func automaticallyCheckForUpdatesClicked(_ sender: NSButton) {
-        guard SUUpdater.shared() != nil else {
-            CheckForUpdatesCheckbox.isChecked = false
-            return
-        }
-        SUUpdater.shared()!.automaticallyChecksForUpdates = CheckForUpdatesCheckbox.isChecked
+    @objc private func hideAtLaunchChanged() {
+        DozerIcons.shared.hideStatusBarIconsAtLaunch = hideAtLaunchCheckbox.isChecked
     }
 
-    @IBAction private func hideStatusBarIconsAtLaunchClicked(_ sender: NSButton) {
-        DozerIcons.shared.hideStatusBarIconsAtLaunch = HideStatusBarIconsAtLaunchCheckbox.isChecked
+    @objc private func hideAfterDelayChanged() {
+        DozerIcons.shared.hideStatusBarIconsAfterDelay = hideAfterDelayCheckbox.isChecked
     }
 
-    @IBAction private func hideStatusBarIconsAfterDelayClicked(_ sender: NSButton) {
-        DozerIcons.shared.hideStatusBarIconsAfterDelay = HideStatusBarIconsAfterDelayCheckbox.isChecked
-    }
-
-    @IBAction private func hideStatusBarIconsSecondsUpdated(_ sender: NSPopUpButton) {
-        Defaults[.hideAfterDelay] = TimeInterval(HideStatusBarIconsSecondsPopUpButton.selectedTag())
+    @objc private func hideAfterDelaySecondsChanged() {
+        Defaults[.hideAfterDelay] = TimeInterval(hideAfterDelayPopup.selectedTag())
         DozerIcons.shared.resetTimer()
     }
 
-    @IBAction private func hideBothDozerIconsClicked(_ sender: NSButton) {
-        DozerIcons.shared.hideBothDozerIcons = HideBothDozerIconsCheckbox.isChecked
+    @objc private func enableRemoveIconChanged() {
+        DozerIcons.shared.enableRemoveDozerIcon = enableRemoveIconCheckbox.isChecked
     }
 
-    @IBAction private func showIconAndMenuClicked(_ sender: NSButton) {
-        DozerIcons.shared.enableIconAndMenu = ShowIconAndMenuCheckbox.isChecked
+    @objc private func hideBothIconsChanged() {
+        DozerIcons.shared.hideBothDozerIcons = hideBothIconsCheckbox.isChecked
     }
 
-    @IBAction private func fontSizeChanged(_ sender: NSPopUpButton) {
-        DozerIcons.shared.iconFontSize = FontSizePopUpButton.selectedTag()
-    }
+    // MARK: - Helpers
 
-    @IBAction private func buttonPaddingChanged(_ sender: NSPopUpButton) {
-        DozerIcons.shared.buttonPadding = CGFloat(ButtonPaddingPopUpButton.selectedTag())
-    }
-
-    @IBAction private func enableRemoveDozerIconClicked(_ sender: NSButton) {
-        DozerIcons.shared.enableRemoveDozerIcon = EnableRemoveDozerIconCheckbox.isChecked
-    }
-
-    /// disables the noIcon-checkbox if no shortcut is set and keeps track whether shortcut is set
-    private func configureEnabledNoIconCheckbox() {
-        if ToggleMenuItemsView.shortcutValue == nil {
-            HideBothDozerIconsCheckbox.isEnabled = false
-            Defaults[.isShortcutSet] = false
-        } else {
-            HideBothDozerIconsCheckbox.isEnabled = true
-            Defaults[.isShortcutSet] = true
+    private func updateHideBothIconsState() {
+        let shortcutIsSet = KeyboardShortcuts.getShortcut(for: .toggleMenuItems) != nil
+        Defaults[.isShortcutSet] = shortcutIsSet
+        hideBothIconsCheckbox.isEnabled = shortcutIsSet
+        if !shortcutIsSet {
+            hideBothIconsCheckbox.isChecked = false
+            Defaults[.noIconMode] = false
         }
     }
 }

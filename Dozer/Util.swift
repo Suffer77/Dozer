@@ -3,35 +3,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import Defaults
 
 extension NSButton {
     var isChecked: Bool {
-        get {
-            state == .on
-        }
-        set {
-            state = newValue ? .on : .off
-        }
-    }
-}
-
-struct Icons {
-    var helperstatusIcon: NSImage {
-        let size = Defaults[.iconSize]
-        return create(image: Assets.helperStatusItemIcon.name, size, size)
-    }
-
-    var removeStatusIcon: NSImage {
-        let size = Defaults[.iconSize] / 2
-        return create(image: Assets.helperStatusItemIcon.name, size, size)
-    }
-
-    private func create(image name: String, _ width: Int, _ height: Int) -> NSImage {
-        guard let image = Bundle.main.image(forResource: NSImage.Name(name)) else {
-            fatalError("get image failed")
-        }
-        image.size = NSSize(width: width, height: height)
-        return image
+        get { state == .on }
+        set { state = newValue ? .on : .off }
     }
 }

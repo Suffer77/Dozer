@@ -3,7 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import Defaults
 
 class RemoveStatusIcon: HelperstatusIcon {
     override init() {
@@ -12,15 +11,13 @@ class RemoveStatusIcon: HelperstatusIcon {
     }
 
     override func statusIconClicked(_: AnyObject?) {
-        guard let currentEvent = NSApp.currentEvent else {
-            return
-        }
+        guard let currentEvent = NSApp.currentEvent else { return }
 
         switch currentEvent.type {
         case .leftMouseDown:
             DozerIcons.shared.toggleRemove()
         case .rightMouseDown:
-            appDelegate.preferencesWindowController.show(preferencePane: .general)
+            appDelegate.settingsWindowController.show(pane: .general)
         default:
             break
         }
@@ -30,7 +27,8 @@ class RemoveStatusIcon: HelperstatusIcon {
         guard let statusIconButton = statusIcon.button else {
             fatalError("helper status item button failed")
         }
-        statusIconButton.image = Icons().removeStatusIcon
-        statusIconButton.image!.isTemplate = true
+        statusIconButton.image = NSImage(named: "helperStatusItemIcon")
+        statusIconButton.image?.size = NSSize(width: 8, height: 8)
+        statusIconButton.image?.isTemplate = true
     }
 }
