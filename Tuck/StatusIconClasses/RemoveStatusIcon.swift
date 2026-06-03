@@ -17,7 +17,7 @@ class RemoveStatusIcon: HelperstatusIcon {
         case .leftMouseDown:
             TuckIcons.shared.toggleRemove()
         case .rightMouseDown:
-            appDelegate.settingsWindowController.show(pane: .general)
+            appDelegate.showSettings()
         default:
             break
         }

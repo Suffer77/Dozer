@@ -27,6 +27,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    func showSettings() {
+        // Accessory apps must switch to regular policy to bring a window to the front
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        settingsWindowController.show(pane: .general)
+
+        // Return to accessory (no Dock icon) when the settings window closes
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(settingsWindowClosed),
+            name: NSWindow.willCloseNotification,
+            object: settingsWindowController.window
+        )
+    }
+
+    @objc private func settingsWindowClosed() {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSWindow.willCloseNotification,
+            object: settingsWindowController.window
+        )
+        NSApp.setActivationPolicy(.accessory)
+    }
+
     lazy var settingsWindowController = SettingsWindowController(
         panes: [General()],
         style: .toolbarItems,

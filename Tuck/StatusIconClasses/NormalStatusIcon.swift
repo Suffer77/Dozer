@@ -24,7 +24,7 @@ class NormalStatusIcon: HelperstatusIcon {
         case .leftMouseDown:
             TuckIcons.shared.toggle()
         case .rightMouseDown:
-            appDelegate.settingsWindowController.show(pane: .general)
+            appDelegate.showSettings()
         default:
             break
         }
