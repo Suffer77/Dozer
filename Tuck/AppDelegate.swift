@@ -30,8 +30,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showSettings() {
         // Accessory apps must switch to regular policy to bring a window to the front
         NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
         settingsWindowController.show(pane: .general)
+        settingsWindowController.window?.makeKeyAndOrderFront(nil)
+        settingsWindowController.window?.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
 
         // Return to accessory (no Dock icon) when the settings window closes
         NotificationCenter.default.addObserver(
