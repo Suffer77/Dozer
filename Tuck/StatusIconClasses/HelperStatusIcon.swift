@@ -53,8 +53,9 @@ class HelperstatusIcon {
         guard let statusIconButton = statusIcon.button else {
             fatalError("helper status item button failed")
         }
-        statusIconButton.image = NSImage(named: "HelperStatusItemIcon")
-        statusIconButton.image?.size = NSSize(width: 10, height: 10)
+        let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+        statusIconButton.image = NSImage(systemSymbolName: "chevron.compact.left", accessibilityDescription: nil)?
+            .withSymbolConfiguration(config)
         statusIconButton.image?.isTemplate = true
     }
 
