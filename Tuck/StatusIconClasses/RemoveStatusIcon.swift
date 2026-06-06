@@ -28,7 +28,7 @@ class RemoveStatusIcon: HelperstatusIcon {
             fatalError("helper status item button failed")
         }
         statusIconButton.image = NSImage(named: "HelperStatusItemIcon")
-        statusIconButton.image?.size = NSSize(width: 8, height: 8)
+        statusIconButton.image?.size = NSSize(width: 5, height: 5)
         statusIconButton.image?.isTemplate = true
     }
 }

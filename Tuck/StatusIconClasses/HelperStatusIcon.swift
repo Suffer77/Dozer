@@ -54,6 +54,7 @@ class HelperstatusIcon {
             fatalError("helper status item button failed")
         }
         statusIconButton.image = NSImage(named: "HelperStatusItemIcon")
+        statusIconButton.image?.size = NSSize(width: 10, height: 10)
         statusIconButton.image?.isTemplate = true
     }
 
