@@ -3,25 +3,37 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import Settings
-import Defaults
-import KeyboardShortcuts
 
-extension Defaults.Keys {
-    static let hideAtLaunchEnabled: Defaults.Key<Bool> = Key<Bool>("hideAtLaunchEnabled", default: false)
-    static let hideAfterDelayEnabled: Defaults.Key<Bool> = Key<Bool>("hideAfterDelayEnabled", default: false)
-    static let hideAfterDelay: Defaults.Key<TimeInterval> = Key<TimeInterval>("hideAfterDelay", default: 10)
-    static let noIconMode: Defaults.Key<Bool> = Key<Bool>("noIconMode", default: false)
-    static let removeTuckIconEnabled: Defaults.Key<Bool> = Key<Bool>("removeTuckIconEnabled", default: false)
-    static let isShortcutSet: Defaults.Key<Bool> = Key<Bool>("isShortcutSet", default: false)
-}
+enum AppSettings {
+    private enum Key {
+        static let hideAtLaunchEnabled = "hideAtLaunchEnabled"
+        static let hideAfterDelayEnabled = "hideAfterDelayEnabled"
+        static let hideAfterDelay = "hideAfterDelay"
+        static let removeTuckIconEnabled = "removeTuckIconEnabled"
+    }
 
-extension KeyboardShortcuts.Name {
-    static let toggleMenuItems = Self("toggleMenuItems")
-}
+    static var hideAtLaunchEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: Key.hideAtLaunchEnabled) }
+        set { UserDefaults.standard.set(newValue, forKey: Key.hideAtLaunchEnabled) }
+    }
 
-extension Settings.PaneIdentifier {
-    static let general = Self("general")
+    static var hideAfterDelayEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: Key.hideAfterDelayEnabled) }
+        set { UserDefaults.standard.set(newValue, forKey: Key.hideAfterDelayEnabled) }
+    }
+
+    static var hideAfterDelay: TimeInterval {
+        get {
+            let value = UserDefaults.standard.double(forKey: Key.hideAfterDelay)
+            return value > 0 ? value : 10
+        }
+        set { UserDefaults.standard.set(newValue, forKey: Key.hideAfterDelay) }
+    }
+
+    static var removeTuckIconEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: Key.removeTuckIconEnabled) }
+        set { UserDefaults.standard.set(newValue, forKey: Key.removeTuckIconEnabled) }
+    }
 }
 
 struct AppInfo {

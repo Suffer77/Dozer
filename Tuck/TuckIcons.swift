@@ -3,7 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import Defaults
 
 public final class TuckIcons {
     static var shared = TuckIcons()
@@ -12,10 +11,7 @@ public final class TuckIcons {
 
     private init() {
         tuckIcons.append(NormalStatusIcon())
-
-        if !hideBothTuckIcons || !Defaults[.isShortcutSet] {
-            tuckIcons.append(NormalStatusIcon())
-        }
+        tuckIcons.append(NormalStatusIcon())
 
         if enableRemoveTuckIcon {
             tuckIcons.append(RemoveStatusIcon())
@@ -24,24 +20,19 @@ public final class TuckIcons {
         if hideStatusBarIconsAfterDelay {
             startTimer()
         }
-
-        Defaults.observe(.isShortcutSet) { _ in
-            self.triggerHideBothTuckIcons()
-        }
-        .tieToLifetime(of: self)
     }
 
     // MARK: Observe changes to settings
 
-    public var hideStatusBarIconsAtLaunch: Bool = Defaults[.hideAtLaunchEnabled] {
+    public var hideStatusBarIconsAtLaunch: Bool = AppSettings.hideAtLaunchEnabled {
         didSet {
-            Defaults[.hideAtLaunchEnabled] = self.hideStatusBarIconsAtLaunch
+            AppSettings.hideAtLaunchEnabled = self.hideStatusBarIconsAtLaunch
         }
     }
 
-    public var hideStatusBarIconsAfterDelay: Bool = Defaults[.hideAfterDelayEnabled] {
+    public var hideStatusBarIconsAfterDelay: Bool = AppSettings.hideAfterDelayEnabled {
         didSet {
-            Defaults[.hideAfterDelayEnabled] = self.hideStatusBarIconsAfterDelay
+            AppSettings.hideAfterDelayEnabled = self.hideStatusBarIconsAfterDelay
             if hideStatusBarIconsAfterDelay {
                 startTimer()
             } else {
@@ -50,32 +41,9 @@ public final class TuckIcons {
         }
     }
 
-    public var hideBothTuckIcons: Bool = Defaults[.noIconMode] {
+    public var enableRemoveTuckIcon: Bool = AppSettings.removeTuckIconEnabled {
         didSet {
-            Defaults[.noIconMode] = self.hideBothTuckIcons
-            triggerHideBothTuckIcons()
-        }
-    }
-
-    public func triggerHideBothTuckIcons() {
-        let normalStatusIconsCount = tuckIcons.filter { $0.type == .normal }.count
-        if hideBothTuckIcons && Defaults[.isShortcutSet] {
-            if normalStatusIconsCount == 2 {
-                let rightTuckIconXPos = get(tuckIcon: .normalRight).xPositionOnScreen
-                tuckIcons.removeAll { $0.xPositionOnScreen == rightTuckIconXPos }
-            }
-        } else if !hideBothTuckIcons && Defaults[.isShortcutSet] || !Defaults[.isShortcutSet] {
-            if normalStatusIconsCount == 1 {
-                show()
-                tuckIcons.append(NormalStatusIcon())
-            }
-        }
-        show()
-    }
-
-    public var enableRemoveTuckIcon: Bool = Defaults[.removeTuckIconEnabled] {
-        didSet {
-            Defaults[.removeTuckIconEnabled] = self.enableRemoveTuckIcon
+            AppSettings.removeTuckIconEnabled = self.enableRemoveTuckIcon
             if enableRemoveTuckIcon {
                 tuckIcons.append(RemoveStatusIcon())
             } else {
@@ -90,9 +58,6 @@ public final class TuckIcons {
     public func hide() {
         perform(action: .hide, statusIcon: .remove)
         perform(action: .hide, statusIcon: .normalLeft)
-        if Defaults[.noIconMode] && Defaults[.isShortcutSet] {
-            perform(action: .hide, statusIcon: .normalRight)
-        }
         stopTimer()
     }
 
@@ -107,9 +72,6 @@ public final class TuckIcons {
         resetTimer()
         perform(action: .hide, statusIcon: .remove)
         perform(action: .show, statusIcon: .normalLeft)
-        if Defaults[.noIconMode] {
-            perform(action: .show, statusIcon: .normalRight)
-        }
     }
 
     public func toggle() {
@@ -148,11 +110,11 @@ public final class TuckIcons {
     // MARK: Timer methods
 
     private func startTimer() {
-        guard Defaults[.hideAfterDelayEnabled] else {
+        guard AppSettings.hideAfterDelayEnabled else {
             stopTimer()
             return
         }
-        timerToHideTuckIcons = Timer.scheduledTimer(withTimeInterval: Defaults[.hideAfterDelay], repeats: false) { _ in
+        timerToHideTuckIcons = Timer.scheduledTimer(withTimeInterval: AppSettings.hideAfterDelay, repeats: false) { _ in
             self.hide()
         }
     }
@@ -170,7 +132,7 @@ public final class TuckIcons {
 
     private func perform(action: StatusIconAction, statusIcon: TuckIcon) {
         if statusIcon == .remove {
-            guard Defaults[.removeTuckIconEnabled] else { return }
+            guard AppSettings.removeTuckIconEnabled else { return }
         }
         let theStatusIcon: HelperstatusIcon = get(tuckIcon: statusIcon)
         switch action {

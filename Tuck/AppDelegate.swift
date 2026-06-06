@@ -3,15 +3,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import Cocoa
-import KeyboardShortcuts
-import Settings
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    private var settingsWindow: NSWindow?
+
     func applicationDidFinishLaunching(_: Notification) {
-        KeyboardShortcuts.onKeyDown(for: .toggleMenuItems) {
-            TuckIcons.shared.toggle()
-        }
-
         // Initialize Tuck Icons
         _ = TuckIcons.shared
 
@@ -28,35 +24,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func showSettings() {
-        // Accessory apps must switch to regular policy to bring a window to the front
-        NSApp.setActivationPolicy(.regular)
-        settingsWindowController.show(pane: .general)
-        settingsWindowController.window?.makeKeyAndOrderFront(nil)
-        settingsWindowController.window?.orderFrontRegardless()
-        NSApp.activate()
+        if settingsWindow == nil {
+            let window = NSWindow(contentViewController: General())
+            window.title = "Tuck Settings"
+            window.styleMask = [.titled, .closable]
+            window.isReleasedWhenClosed = false
+            window.delegate = self
+            window.setContentSize(NSSize(width: 360, height: 210))
+            window.center()
+            settingsWindow = window
+        }
 
-        // Return to accessory (no Dock icon) when the settings window closes
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(settingsWindowClosed),
-            name: NSWindow.willCloseNotification,
-            object: settingsWindowController.window
-        )
+        NSApp.setActivationPolicy(.regular)
+        settingsWindow?.makeKeyAndOrderFront(nil)
+        settingsWindow?.orderFrontRegardless()
+        NSApp.activate()
     }
 
-    @objc private func settingsWindowClosed() {
-        NotificationCenter.default.removeObserver(
-            self,
-            name: NSWindow.willCloseNotification,
-            object: settingsWindowController.window
-        )
+    func windowWillClose(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
     }
-
-    lazy var settingsWindowController = SettingsWindowController(
-        panes: [General()],
-        style: .toolbarItems,
-        animated: true,
-        hidesToolbarForSingleItem: true
-    )
 }

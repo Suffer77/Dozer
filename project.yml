@@ -1,19 +1,5 @@
 name: Tuck
 
-packages:
-  Defaults:
-    url: https://github.com/sindresorhus/Defaults
-    from: 9.0.0
-  Settings:
-    url: https://github.com/sindresorhus/Settings
-    from: 3.1.0
-  LaunchAtLogin:
-    url: https://github.com/sindresorhus/LaunchAtLogin-Modern
-    from: 1.1.0
-  KeyboardShortcuts:
-    url: https://github.com/sindresorhus/KeyboardShortcuts
-    from: 2.4.0
-
 options:
   usesTabs: false
   tabWidth: 4
@@ -42,12 +28,6 @@ targets:
         MACOSX_DEPLOYMENT_TARGET: "26.0"
         VERSIONING_SYSTEM: apple-generic
         CURRENT_PROJECT_VERSION: 1
-    dependencies:
-      - package: Defaults
-      - package: Settings
-      - package: LaunchAtLogin
-      - package: KeyboardShortcuts
-
 schemes:
   Tuck:
     build:
