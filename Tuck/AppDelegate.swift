@@ -33,7 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsWindowController.show(pane: .general)
         settingsWindowController.window?.makeKeyAndOrderFront(nil)
         settingsWindowController.window?.orderFrontRegardless()
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
 
         // Return to accessory (no Dock icon) when the settings window closes
         NotificationCenter.default.addObserver(
